@@ -2,6 +2,7 @@ import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
 
 import type { User } from "~/models/user.server";
+import { logout, requireUser } from "~/session.server";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -70,6 +71,14 @@ export function useOptionalAdminUser() {
   const user = useOptionalUser();
   if (!user) return null;
   if (user.email !== ENV.ADMIN_EMAIL) return null;
+  return user;
+}
+
+export async function requireAdminUser(request: Request) {
+  const user = await requireUser(request);
+  if (user.email !== ENV.ADMIN_EMAIL) {
+    throw await logout(request);
+  }
   return user;
 }
 
